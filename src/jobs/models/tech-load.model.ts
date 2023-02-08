@@ -1,23 +1,22 @@
 export class TechLoad {
 
   // TODO list:
-  // Create facilities generator
-  // Create services generator
-  // jsdocs
+  // [x] Create facilities generator
+  // [ ] Create services generator
+  // [ ] jsdocs
 
   public jobs: JobData[];
   public jobCount: number;
   public uuid: string;
 
   private seed: number;
-  private seedIndex: number;
-  private cityLocations: City[];
+  private seedIndex: number = 0; // doesn't really matter what it's instantiated to, just needs to be any number >= 0 so the seed methods can generate the next number
 
   constructor(uuid: string) {
     this.uuid = uuid;
-    this.seed = this.convertStrToNum(uuid);
-    this.cityLocations = this.generateCityLocations(); // this should ideally be a json file or something.
-
+    this.seed = Math.abs(this.convertStrToNum(uuid));
+    
+    this.jobs = [];
     this.jobCount = Math.round( (this.nextRand()*7 + this.nextRand()*7) / 2 ); // generate a random number of jobs, weighted towards ~3
     for (let i = 0; i < this.jobCount; i++) {
       this.jobs.push(this.generateJob());
@@ -27,22 +26,26 @@ export class TechLoad {
   private generateJob(): JobData {
     const firstName = this.randOf(['Aaron', 'Ed', 'Kerry', 'Micah', 'Raul', 'Tyler']);
     const lastName = this.randOf(['Smith', 'Jones', 'Collins', 'Doe', 'Simmons', 'Taylor']);
-    const jobType = this.randOf(['Install', 'Repair', 'Cutover', 'POTS', 'BSW']);
+    const streetAddress = this.generateStreetAddress();
+    const jobType = this.randOf(['Install', 'Repair', 'Helper', 'POTS', 'BSW']);
+    const transportType = jobType === 'POTS' || this.nextRand() < 0.5 ? this.randOf(['IP-CO', 'IP-RT', 'FTTN', 'FTTN-BP']) : this.randOf(['FTTP GPON', 'FTTP XGS-PON']);
     const curJob: JobData = {
       firstName: firstName,
       lastName: lastName,
       accountNumber: this.randDigits(7),
-      streetAddress: this.generateStreetAddress(),
+      streetAddress: streetAddress,
       city: {
         zip: this.randDigits(5),
-        ...this.randOf(this.cityLocations)
+        ...this.generateCityLocation()
       },
+      appointment: this.generateAppointment(),
       email: this.generateEmail(firstName, lastName),
       phone: this.randDigits(10),
       history: this.generateHistory(),
       jobType: jobType,
-      facilities: this.generateFacilities(jobType),
-      services: this.generateServices(jobType)
+      transportType: transportType,
+      facilities: this.generateFacilities(transportType, streetAddress),
+      services: this.generateServices(transportType)
     };
 
     return curJob;
@@ -97,6 +100,10 @@ export class TechLoad {
     return email;
   }
 
+  private generateAppointment(): string {
+    return this.randOf(['8-10', '10-12', '8-12', '8-8', '12-2', '2-4', '12-4', '4-8']);
+  }
+
   private generateStreetAddress(): string {
     const streetNames: string[] = ['Main', 'Church', 'High', 'Elm', 'Park', 'Walnut', 'Washington', '2nd', 'Chestnut', 'Broad', 'Maple', 'Oak', 'Maple', 'Center', 'Pine', 'River', 'Market', 'Washington', 'Water', 'Union', '3rd', 'South', '4th'];
     const streetTypes: string[] = ['St', 'Ln', 'Ave', 'Dr', 'Blvd', 'Park', 'Rd'];
@@ -104,20 +111,29 @@ export class TechLoad {
     return `${this.randDigits(3,6)} ${this.randOf(streetNames)} ${this.randOf(streetTypes)}`;
   }
 
-  private generateFacilityAddress(): string {
-    const location: string[] = ['F', 'S', 'R', 'B'];
+  private generateFacilityAddress(streetAddress?: string): string {
+    const locationPrefix: string[] = ['F', 'S', 'R', 'B'];
 
-    return `${this.randOf(location)} ${this.generateStreetAddress()}`;
+    return `${this.randOf(locationPrefix)} ${!streetAddress ? this.generateStreetAddress() : streetAddress}`;
+  }
+
+  private convertToNearbyFacilityAddress(streetAddress: string): string {
+    const addressSplit: string[] = streetAddress.split(' ');
+    const addressNum: number = +addressSplit.shift();
+
+    const newAddress = `${addressNum + ( Math.floor(this.nextRand()*5)-2) * (Math.floor(this.nextRand()*6) )} ${addressSplit.join(' ')}`;
+
+    return this.generateFacilityAddress(newAddress); // add prefix
   }
 
   private generateHistory(): History[] {
     const historyEntries: History[] = [];
     const historyEntryCount: number = Math.floor(this.nextRand() * 7) + 3;
-    let lastDate = (new Date()).getTime() - 1000*60*24; // minus one day
+    let lastDate = (new Date()).getTime() - 1000*3600*24; // minus one day so it was yesterday. Technically won't be consistent between days, could always pick a random date in the past so it's fully procedural.
 
     for (let i = 0; i < historyEntryCount; i++) {
       const historyEntryTitle: string = this.randOf(['Interaction', 'Dispatch', 'Case']);
-      const date: number = lastDate -= Math.floor(this.nextRand() * 7) * 1000*60*24; // subtract 0-7 days from last time
+      lastDate -= Math.floor(this.nextRand() * 7) * 1000*3600*24; // subtract 0-7 days from last time
       
       const curHistoryEntryInfo: string[] = [];
       let interactionType: number;
@@ -133,7 +149,11 @@ export class TechLoad {
           curHistoryEntryInfo.push(`Tech Notes: ${this.uuid ? this.uuid : 'tr99aa'}; ${this.randOf(['Worked on hsia. Probably wont be in service long but fingers crossed.', 'Lots of work done but will come back later to completely complete work.', 'Customer asked me if I always dressed like this. I said yes. I always do, I only have one uniform. I mean I have multiple uniforms, but they all look the same. I asked why they asked. They just said they were curious. I left.'])}`);
           break;
         case 'Case':
-          curHistoryEntryInfo.push(`Case Creation Time: ${Math.ceil(this.nextRand()*12)}:${Math.floor(this.nextRand()*60)} ${this.nextRand() < 0.5 ? 'A':'P'}M`);
+          let minutes: string = ''+Math.floor(this.nextRand()*60);
+          if (minutes.length === 1) {
+            minutes = `0${minutes}`;
+          }
+          curHistoryEntryInfo.push(`Case Creation Time: ${Math.ceil(this.nextRand()*12)}:${minutes} ${this.nextRand() < 0.5 ? 'A':'P'}M`);
           curHistoryEntryInfo.push(`Case Status: ${this.nextRand() < 0.2 ? 'OPEN' : 'CLOSED'}`);
           curHistoryEntryInfo.push(`Notes: ${this.randOf(['Customer wanted to verify if they did in fact have service with us. They do. Informed customer.', 'Customer\'s internet is not working. Followed troubleshooting flow. Customer had cell phone upside down.', 'Customer is wondering why this entry type would be any different than Interaction entries, but idk I just whipped this up so we will roll with it.'])}`);
           break;
@@ -142,21 +162,36 @@ export class TechLoad {
       const historyDate = new Date(lastDate);
       historyEntries.push({
         title: historyEntryTitle,
-        date: `${historyDate.getMonth()}/${historyDate.getDay()}/${historyDate.getFullYear()}`,
+        date: `${historyDate.getMonth()+1}/${historyDate.getDate()}/${historyDate.getFullYear()}`,
         info: curHistoryEntryInfo
       });
     }
     return historyEntries;
   }
 
-  private generateFacilities(jobType: string): Facility[] {
-    let facilities: Facility[] = [];
+  private generateFacilities(transportType: string, cxAddress: string): Facility[] {
+    let facilitiesOutput: Facility[] = [];
+    const isFiber: boolean = transportType.substring(0,4) === 'FTTP';
+    const fiberFacilitiesHeadings = ['PFP', 'CFST', 'Prem'];
+    const facilitiesCount = isFiber ? 3 : Math.floor((this.nextRand()*5 + this.nextRand()*5) / 2);
+    
+    for (let i = 0; i < facilitiesCount; i++) {
+      facilitiesOutput.push({
+        heading: isFiber ? fiberFacilitiesHeadings[i] : `F${i+1}`,
+        address: i === facilitiesCount - 1 ? cxAddress : i === facilitiesCount - 2 ? this.convertToNearbyFacilityAddress(cxAddress) : this.generateFacilityAddress(),
+        ...(i !== facilitiesCount - 1 ? { // Only add this data if we're not on the last facility (prem)
+          cable: Math.ceil(this.nextRand() * (i === 0 ? 24 : 144)),
+          pair: Math.ceil(this.nextRand() * (i === 0 ? 32 : 144)),
+          port: Math.ceil(this.nextRand() * (i === 0 ? 800 : 12))
+        } : {})
+      });
+    }
 
-    return facilities;
+    return facilitiesOutput;
   }
 
-  private generateServices(jobType: string): Service[] {
-    return [];
+  private generateServices(transportType): Service[] {
+    return []; // Not really sure what this is. I guess speed and stuff.
   }
 
   /**
@@ -175,7 +210,7 @@ export class TechLoad {
     const digits = Math.floor(this.nextRand() * (highDigits-lowDigits)) + lowDigits;
     return Math.floor(this.nextRand() * Math.pow(10, digits));
   }
-  private generateCityLocations(): City[] {
+  private generateCityLocation(): City {
     const locations = `AL,Montgomery,32.377716,-86.300568
 AK,Juneau,58.301598,-134.420212
 AZ,Phoenix,33.448143,-112.096962
@@ -225,12 +260,12 @@ VA,Richmond,37.538857,-77.43364
 WA,Olympia,47.035805,-122.905014
 WV,Charleston,38.336246,-81.612328
 WI,43.074684,-89.384445
-WY,Cheyenne,41.140259,-104.820236`.split('\n').map(function(el: string): City {
+WY,Cheyenne,41.140259,-104.820236`.split('\n').map(function(el: string): City { // kinda gross, but this basically converts the above string into an array of City objects
       const parts = el.split(',');
       return {state: parts[0], city: parts[1], lat: +parts[2], long: +parts[3]};
     });
-    return locations;
-  } // End of generateCityLocations()
+    return this.randOf(locations);
+  } // End of generateCityLocation()
   
 }
 
@@ -240,18 +275,20 @@ interface JobData {
   lastName: string,
   streetAddress: string,
   city: City,
+  appointment: string,
   email: string,
   phone: number,
   jobType: string,
+  transportType: string,
   history: History[],
   facilities: Facility[],
   services: Service[],
 }
 
 interface Facility {
+  heading: string,
   address: string,
-  label: string,
-  cable?: string,
+  cable?: number,
   pair?: number,
   port?: number,
 }

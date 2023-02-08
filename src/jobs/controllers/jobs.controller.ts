@@ -6,7 +6,7 @@ import { TechLoad } from '../models/tech-load.model';
 export class JobsController {
   @Get('/get/:uuid')
   async getJobs(@Param('uuid') uuid: string) {
-    await new Promise(resolve => setTimeout(resolve, 1000)); // just adds a delay for feel
+    // await new Promise(resolve => setTimeout(resolve, 1500)); // just adds a delay for feel
 
     const jobData = new TechLoad(uuid);
 
