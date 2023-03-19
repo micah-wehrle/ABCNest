@@ -207,12 +207,24 @@ export class TechLoad {
   }
 
   private randDigits(lowDigits: number, highDigits?: number): number {
+    let output: number;
+    let digits: number;
     if (!highDigits) {
-      return Math.floor(this.nextRand() * (10 ** lowDigits));
+      digits = 10;
+      output = Math.floor(this.nextRand() * (10 ** lowDigits));
     }
-    const digits = Math.floor(this.nextRand() * (highDigits-lowDigits)) + lowDigits;
-    return Math.floor(this.nextRand() * Math.pow(10, digits));
+    else {
+      digits = Math.floor(this.nextRand() * (highDigits-lowDigits)) + lowDigits;
+      output = Math.floor(this.nextRand() * Math.pow(10, digits));
+    }
+
+    while (output < 10 ** (digits-1)) {
+      output *= 10;
+    }
+
+    return output;
   }
+
   private generateCityLocation(streetAddress: string): Location {
     const locations = `AL,Montgomery,32.377716,-86.300568
 AK,Juneau,58.301598,-134.420212
@@ -317,4 +329,4 @@ interface Location {
   zip?: number,
   lat: number,
   long: number
-}
+} 
