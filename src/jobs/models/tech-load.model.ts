@@ -210,7 +210,7 @@ export class TechLoad {
     let output: number;
     let digits: number;
     if (!highDigits) {
-      digits = 10;
+      digits = lowDigits;
       output = Math.floor(this.nextRand() * (10 ** lowDigits));
     }
     else {
