@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Header } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 
 import { TechLoad } from '../models/tech-load.model';
 
@@ -8,7 +8,15 @@ export class JobsController {
   async getJobs(@Param('uuid') uuid: string) {
     // await new Promise(resolve => setTimeout(resolve, 1500)); // just adds a delay for feel
 
+    if (!uuid || uuid.length === 0) {
+      return {
+        'flowStatus': 'FAILURE',
+        'flowStatusMessage': 'invalid UUID',
+      }
+    }
+
     const jobData = new TechLoad(uuid);
+
 
     return {
       'flowStatus': 'SUCCESS',

@@ -23,6 +23,10 @@ export class TechLoad {
     }
   }
 
+  /**
+   * @description - Called by constructor to generate a job. 
+   * @returns {JobData} 
+   */
   private generateJob(): JobData {
     const firstName = this.randOf(['Aaron', 'Ed', 'Kerry', 'Micah', 'Raul', 'Tyler']);
     const lastName = this.randOf(['Smith', 'Jones', 'Collins', 'Doe', 'Simmons', 'Taylor']);
@@ -33,10 +37,9 @@ export class TechLoad {
       firstName: firstName,
       lastName: lastName,
       accountNumber: this.randDigits(7),
-      streetAddress: streetAddress,
-      city: {
+      location: {
         zip: this.randDigits(5),
-        ...this.generateCityLocation()
+        ...this.generateCityLocation(streetAddress)
       },
       appointment: this.generateAppointment(),
       email: this.generateEmail(firstName, lastName),
@@ -199,7 +202,7 @@ export class TechLoad {
    * @param {string[]} options An array of possible options to pseudo-randomly choose from 
    * @returns {string} A pseudo-randomly selected element from the array
    */
-  private randOf(options: any[]): any {
+  private randOf<T>(options: T[]): T {
     return options[Math.floor(this.nextRand() * options.length)];
   }
 
@@ -210,7 +213,7 @@ export class TechLoad {
     const digits = Math.floor(this.nextRand() * (highDigits-lowDigits)) + lowDigits;
     return Math.floor(this.nextRand() * Math.pow(10, digits));
   }
-  private generateCityLocation(): City {
+  private generateCityLocation(streetAddress: string): Location {
     const locations = `AL,Montgomery,32.377716,-86.300568
 AK,Juneau,58.301598,-134.420212
 AZ,Phoenix,33.448143,-112.096962
@@ -260,9 +263,9 @@ VA,Richmond,37.538857,-77.43364
 WA,Olympia,47.035805,-122.905014
 WV,Charleston,38.336246,-81.612328
 WI,43.074684,-89.384445
-WY,Cheyenne,41.140259,-104.820236`.split('\n').map(function(el: string): City { // kinda gross, but this basically converts the above string into an array of City objects
+WY,Cheyenne,41.140259,-104.820236`.split('\n').map(function(el: string): Location { // kinda gross, but this basically converts the above string into an array of City objects
       const parts = el.split(',');
-      return {state: parts[0], city: parts[1], lat: +parts[2], long: +parts[3]};
+      return {streetAddress: streetAddress, state: parts[0], city: parts[1], lat: +parts[2], long: +parts[3]};
     });
     return this.randOf(locations);
   } // End of generateCityLocation()
@@ -273,8 +276,7 @@ interface JobData {
   accountNumber: number,
   firstName: string,
   lastName: string,
-  streetAddress: string,
-  city: City,
+  location: Location,
   appointment: string,
   email: string,
   phone: number,
@@ -308,7 +310,8 @@ interface History {
   info: string[]
 }
 
-interface City {
+interface Location {
+  streetAddress: string,
   state: string,
   city: string,
   zip?: number,
