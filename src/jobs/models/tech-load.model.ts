@@ -12,12 +12,14 @@ export class TechLoad {
   private seed: number;
   private seedIndex: number = 0; // doesn't really matter what it's instantiated to, just needs to be any number >= 0 so the seed methods can generate the next number
 
-  constructor(uuid: string) {
+  constructor(uuid: string, amount?: number) {
     this.uuid = uuid;
     this.seed = Math.abs(this.convertStrToNum(uuid));
     
     this.jobs = [];
-    this.jobCount = Math.round( (this.nextRand()*7 + this.nextRand()*7) / 2 ); // generate a random number of jobs, weighted towards ~3
+    // generate a random number of jobs, weighted towards ~3
+    const generatedJobCount = Math.round( (this.nextRand()*7 + this.nextRand()*7) / 2 );  // This line needs to run regardless of if we were passed an amount, or else the seeded rng will get messed up!
+    this.jobCount = amount ? amount : generatedJobCount;
     for (let i = 0; i < this.jobCount; i++) {
       this.jobs.push(this.generateJob());
     }
