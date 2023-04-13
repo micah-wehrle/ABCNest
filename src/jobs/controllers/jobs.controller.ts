@@ -11,6 +11,16 @@ export class JobsController {
       'data': uuid,
     }
   }
+
+  @Get('/wetrack/get/')
+  async getWeTrack() {
+    
+  }
+
+  @Get('wetrack/check/:repo/:branch')
+  async checkWeTrack(@Param('repo') repoName: string, @Param('branch') branchName: string) {
+    
+  }
  
   @Post('/update/:id')
   updateJob(@Body() body: any, @Param('id') id: any) {
