@@ -276,7 +276,7 @@ VT,Montpelier,44.262436,-72.580536
 VA,Richmond,37.538857,-77.43364
 WA,Olympia,47.035805,-122.905014
 WV,Charleston,38.336246,-81.612328
-WI,43.074684,-89.384445
+WI,Madison,43.074684,-89.384445
 WY,Cheyenne,41.140259,-104.820236`.split('\n').map(function(el: string): Location { // kinda gross, but this basically converts the above string into an array of City objects
       const parts = el.split(',');
       return {streetAddress: streetAddress, state: parts[0], city: parts[1], lat: +parts[2], long: +parts[3]};
