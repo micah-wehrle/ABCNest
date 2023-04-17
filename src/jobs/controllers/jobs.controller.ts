@@ -14,7 +14,13 @@ export class JobsController {
 
   @Get('/wetrack/get/')
   async getWeTrack() {
-    
+    /*
+      Pull data from firebase
+        send auth data
+        get all data
+      Send data to front end
+      Micah needs to watch videos for this!
+    */
   }
 
   @Get('wetrack/check/:repo/:branch')
