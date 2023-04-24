@@ -11,9 +11,4 @@ export class JobsController {
       'data': uuid,
     }
   }
- 
-  @Post('/update/:id')
-  updateJob(@Body() body: any, @Param('id') id: any) {
-    
-  }
 }
