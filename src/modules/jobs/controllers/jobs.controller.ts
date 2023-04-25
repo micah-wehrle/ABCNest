@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Header } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 
 @Controller('/jobs')
 export class JobsController {
