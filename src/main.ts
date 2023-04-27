@@ -1,9 +1,10 @@
 import { NestFactory } from '@nestjs/core';
-import { JobsModule } from './jobs/jobs.module';
+
+import { AbcNestModule } from './modules/abc-nest.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(JobsModule);
-  app.enableCors();
+  const app = await NestFactory.create(AbcNestModule);
+  app.enableCors(); // Required for local testing
   await app.listen(3000);
 }
 

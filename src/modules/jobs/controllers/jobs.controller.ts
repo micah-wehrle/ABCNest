@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 
 import { TechLoad } from '../models/tech-load.model';
 
