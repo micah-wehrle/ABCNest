@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Header } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 
 @Controller('/jobs')
 export class JobsController {
@@ -7,13 +7,8 @@ export class JobsController {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return {
       'flowStatus': 'SUCCESS',
-      'flowStatusMessage': 'IDK success',
+      'flowStatusMessage': 'Successfully transmitted UUID.',
       'data': uuid,
     }
-  }
- 
-  @Post('/update/:id')
-  updateJob(@Body() body: any, @Param('id') id: any) {
-    
   }
 }
