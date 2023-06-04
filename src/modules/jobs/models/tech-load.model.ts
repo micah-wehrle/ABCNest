@@ -1,8 +1,8 @@
 export class TechLoad {
 
-  public jobs: JobData[];
-  public jobCount: number;
-  public uuid: string;
+  public  jobs: JobData[];
+  private jobCount: number;
+  private uuid: string;
 
   private seed: number;
   private seedIndex: number = 0; // doesn't really matter what it's instantiated to, just needs to be any number >= 0 so the seed methods can generate the next number
@@ -60,8 +60,7 @@ export class TechLoad {
   private convertStrToNum(str: string): number {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
-      hash = ((hash << 5) - hash) + str.charCodeAt(i); // essentially convert the number to binary, shift the bits over 5, and add the new number
-      hash |= 0; // converts the number to a 32bit integer
+      hash = ((hash << 5) - hash) + str.charCodeAt(i); // essentially convert the number to binary, shift the bits over 5 places, and add the new number
     }
     return hash;
   }
@@ -82,7 +81,7 @@ export class TechLoad {
 
   /**
    * @description Will return a random element of the given array based off of the global seeded random number generator
-   * @param {string[]} options An array of possible options to pseudo-randomly choose from 
+   * @param {T[]} options An array of possible options to pseudo-randomly choose from 
    * @returns {string} A pseudo-randomly selected element from the array
    */
    private randOf<T>(options: T[]): T {
@@ -352,7 +351,7 @@ export class TechLoad {
   }
 }
 
-interface JobData {
+export interface JobData {
   accountNumber: number,
   firstName: string,
   lastName: string,
