@@ -18,16 +18,16 @@ export class JobsController {
     if (!uuid || !uuid.match(/^[a-z]{2}\d{3}[a-z\d]$/i)) { // regex checks for valid uuid
       return {
         'flowStatus': 'FAILURE',
-        'flowStatusMessage': `${!uuid ? 'Please pass' : `${uuid} is not`} a valid uuid. Must be 6 characters: 2 letters, 3 digits, and then a letter or digit.`,
+        'flowStatusMessage': `Invalid uuid`,
       }
     }
 
-    // Pass the amount whether it exists or not. TechLoad handles NaN (falsy) or an actual number
+    // Doesn't matter if amount is undefined or a non-number, parseInt will just return NaN which is then handled by TechLoad. The second value is an optional variable so in the case that amount is NaN then it is still handled the same, as a falsy value.
     const jobData: TechLoad = new TechLoad(uuid, Number.parseInt(amount));
     
     return {
       'flowStatus': 'SUCCESS',
-      'flowStatusMessage': `Successfully generated job data from uuid ${uuid}`,
+      'flowStatusMessage': '',
       'jobs': jobData.jobs // only passes array of jobs to save on response packet size
     }
   }

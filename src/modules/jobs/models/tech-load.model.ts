@@ -9,11 +9,12 @@ export class TechLoad {
 
   constructor(uuid: string, amount?: number) { // Can be built with a given amount, but if not will seed the number of jobs to build
     this.uuid = uuid;
+    // uses abs as ensure the seed is positive. convertStrToNum sometimes returns a negative value, and the seed increments positively so must start >= 0 or else may create predictable seeded number (i.e. 0 * anything is always 0)
     this.seed = Math.abs(this.convertStrToNum(uuid));
     
     this.jobs = [];
     // generate a random number of jobs, weighted towards ~3
-    const generatedJobCount = Math.round( (this.nextRand()*7 + this.nextRand()*7) / 2 );  // This line needs to run regardless of if we were passed an amount, or else the seeded rng will get messed up!
+    const generatedJobCount: number = Math.round( (this.nextRand()*7 + this.nextRand()*7) / 2 );  // This line needs to run regardless of if we were passed an amount, or else the seeded rng will get messed up!
     this.jobCount = amount ? amount : generatedJobCount; // allows for front end to request a specific number of jobs. If amount is not present, use the above generated number
     for (let i = 0; i < this.jobCount; i++) {
       this.jobs.push(this.generateJob()); // Where all the "magic" happens, generateJob will create all job data and push it into job array
@@ -43,8 +44,8 @@ export class TechLoad {
       email: this.generateEmail(firstName, lastName),
       phone: this.randDigits(10),
       history: this.generateHistory(),
-      jobType: jobType,
-      transportType: transportType,
+      jobType,
+      transportType,
       facilities: this.generateFacilities(transportType, streetAddress),
       services: this.generateServices(transportType)
     };
