@@ -1,8 +1,9 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+
 import axios, { Axios, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { BehaviorSubject, lastValueFrom, map, Observable, Subscription } from 'rxjs';
-import { WeTrackTicket } from '../../models/we-track-ticket.model';
+import { Comment, WeTrackTicket } from '../../models/we-track-ticket.model';
 
 @Injectable()
 export class WeTrackService {
@@ -14,15 +15,13 @@ export class WeTrackService {
   private readonly timeoutMessage: string = 'Error: Timeout limit exceeded';
   private readonly standardRequestOptions: Partial<AxiosRequestConfig>;
 
-  private readonly backendUrl: string = "https://atlas-boot-camp-default-rtdb.firebaseio.com/we-track.json";
+  private readonly backendUrl: string = "https://atlas-boot-camp-default-rtdb.firebaseio.com/we-track";
 
   private loadingChanged: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private loading: boolean;
   private httpSubscription: Subscription;
   private isSuccessfullyCompleted: boolean = false;
   private apiUniqueId: number;
-
-  private tickets: WeTrackTicket[];
 
   constructor(private http: HttpService) {
 
@@ -31,7 +30,7 @@ export class WeTrackService {
       timeoutErrorMessage: this.timeoutMessage,
     }
 
-    this.initTickets();
+    // this.initTickets();
   }
 
   public getLoading(): Observable<boolean> {
@@ -51,35 +50,42 @@ export class WeTrackService {
     return this.isSuccessfullyCompleted;
   }
 
-  public getResults(): WeTrackTicket[] {
-    return this.tickets.slice();
-  }
+  // public getResults(): WeTrackTicketsObject {
+  //   return JSON.parse(JSON.stringify(this.tickets));
+  // }
 
   private async initTickets(): Promise<void> {
-    this.tickets = (await this.callTickets()).tickets;
+    // this.tickets = (await this.callTickets()).tickets;
   }
 
-  public async callTickets(): Promise<WeTrackResponse> {
+  private async call(uniqueId: number = -1): Promise<WeTrackResponse> {
+
+    const path = uniqueId === -1 ? '' : '/' + uniqueId.toString();
+
     try {
-      const response = this.http.get(this.backendUrl, this.standardRequestOptions)
+      const response = this.http.get(this.backendUrl + path + '.json', this.standardRequestOptions)
         .pipe(map(res => res.data));
       
       const output = await lastValueFrom(response);
 
-      this.tickets = this.removeDeletedTickets(output);
       return {
-        tickets: this.tickets,
+        tickets: uniqueId === -1 ? output : null,
+        singleTicket: uniqueId !== -1 ? output : null,
         apiSuccessful: true
       };
     }
     catch(error) {
-      this.tickets = this.buildFakeTickets();
+      console.error(error); 
       this.firebaseIsWorking = false;
       return {
-        tickets: this.tickets,
         apiSuccessful: false,
+        error: error.error,
       };
     }
+  }
+
+  public async callTickets(): Promise<WeTrackResponse> {
+    return this.call();
   }
 
   /**
@@ -88,27 +94,29 @@ export class WeTrackService {
    * @returns 
    */
   public async updateTicket(ticket: Partial<WeTrackTicket> & Pick<WeTrackTicket, 'uniqueId'>): Promise<WeTrackResponse> {
-    let tickets = JSON.parse(JSON.stringify((this.tickets)));
 
-    console.log(tickets);
-    console.log(ticket);
+    let ticketPayload: WeTrackTicket = null;
 
-    for (let i = 0; i < tickets.length; i++) {
-      if (tickets[i].uniqueId === ticket.uniqueId) {
-        for (let key in ticket) {
-          tickets[i][key] = ticket[key];
-        }
-        break;
+    // Get current ticket from back end
+    await this.call(ticket.uniqueId).then( 
+      (res: WeTrackResponse) => {
+        ticketPayload = res.singleTicket;
       }
+    );
+
+    // make changes to ticket based on parameter passed into this method
+    for (let key in ticket) {
+      ticketPayload[key] = ticket[key];
     }
 
+    // send the updated ticket back to back end
     try {
-      const res = this.http.put(this.backendUrl, JSON.stringify(tickets), this.standardRequestOptions)
+      const res = this.http.put(`${this.backendUrl}/${ticket.uniqueId}.json`, JSON.stringify(ticketPayload), this.standardRequestOptions)
         .pipe(map(res => res.data));
   
       const output = await lastValueFrom(res);
       return {
-        tickets: this.removeDeletedTickets(output),
+        tickets: output, 
         apiSuccessful: true
       };
 
@@ -117,7 +125,6 @@ export class WeTrackService {
       console.error(error); 
       this.firebaseIsWorking = false;
       return {
-        tickets: this.tickets,
         apiSuccessful: false,
         error: error.error,
       };
@@ -126,101 +133,80 @@ export class WeTrackService {
 
   public async createTicket(ticket: WeTrackTicket): Promise<WeTrackResponse> {
     try {
-      const ticketPayload = [...this.tickets, ticket];
+      const ticketPayload = ticket;
 
-      const res = this.http.put(this.backendUrl, JSON.stringify(ticketPayload), this.standardRequestOptions)
+      const res = this.http.put(`${this.backendUrl}/${ticket.uniqueId}.json`, JSON.stringify(ticketPayload), this.standardRequestOptions)
         .pipe(map(response => response.data));
       
       const output = await lastValueFrom(res);
 
-      this.tickets = this.removeDeletedTickets(output);
-
       return {
-        tickets: this.tickets,
         apiSuccessful: true,
       };
     }
     catch(error) {
-
-      this.tickets = [...this.tickets, ticket];
+      console.error(error); 
       this.firebaseIsWorking = false;
-
       return {
-        tickets: this.tickets,
         apiSuccessful: false,
-        error: error.error
+        error: error.error,
       };
     }
   }
 
-  private removeDeletedTickets(tickets: WeTrackTicket[]): WeTrackTicket[] {
+  public async deleteTicket(ticketId: number, isDeleted: boolean): Promise<WeTrackResponse> {
 
-    const output: WeTrackTicket[] = [];
+    try {
+      const res = this.http.put(`${this.backendUrl}/${ticketId}/deleted.json`, `${isDeleted}`, this.standardRequestOptions)
+        .pipe(map(response => response.data));
+    
+      const output = await lastValueFrom(res);
 
-    for (let ticket of tickets) {
-      if (!ticket.deleted) {
-        delete ticket["deleted"];
-        output.push(ticket);
-      }
+      return {
+        apiSuccessful: true,
+      };
     }
-
-    return output;
+    catch(error) {
+      console.error(error); 
+      this.firebaseIsWorking = false;
+      return {
+        apiSuccessful: false,
+        error: error.error,
+      };
+    }
   }
 
-  private buildFakeTickets(): WeTrackTicket[] {
-    return [
-      {
-        title: 'FAKE TICKET',
-        type: WeTrackTicket.STATIC_DATA.TYPE.ISSUE,
-        description: 'This is a fake ticket, which likely has been generated because the database API is not working for whatever reason.',
-        submitter: 'Micah',
-        assignee: '',
-        importance: WeTrackTicket.STATIC_DATA.PRIORITY.LOW,
-        status: WeTrackTicket.STATIC_DATA.STATUS.PENDING,
-        creationDate: new Date("01/01/1970"),
-        editDate: null,
-        comments: [],
-        tags: [],
-        deleted: false,
-        uniqueId: 0,
-      },
-      {
-        title: 'Api Monitor Page',
-        type: WeTrackTicket.STATIC_DATA.TYPE.FEATURE,
-        description: 'Create a view, accessed by the sidebar menu, which displays info about all of our api service files. When a servici',
-        submitter: 'Micah',
-        assignee: 'Brandon',
-        importance: WeTrackTicket.STATIC_DATA.PRIORITY.LOW,
-        status: WeTrackTicket.STATIC_DATA.STATUS.ASSIGNED,
-        creationDate: new Date("03/26/2024"),
-        editDate: null,
-        comments: [],
-        tags: [],
-        deleted: false,
-        uniqueId: 1,
-      },
+  public async addComment(uniqueId: number, comment: Comment): Promise<WeTrackResponse> {
+    try {
+      const res = this.http.put(`${this.backendUrl}/${uniqueId}/comments/${comment.date}.json`, JSON.stringify(comment), this.standardRequestOptions)
+        .pipe(map(response => response.data));
+    
+      const output = await lastValueFrom(res);
 
-      {
-        title: 'Finish weTrack',
-        type: WeTrackTicket.STATIC_DATA.TYPE.FEATURE,
-        description: 'Create weTrack on the band and front ends so that when any user loads the weTrack page they can have access to all the current tickets.',
-        submitter: 'Micah',
-        assignee: 'Micah',
-        importance: WeTrackTicket.STATIC_DATA.PRIORITY.HIGH,
-        status: WeTrackTicket.STATIC_DATA.STATUS.ASSIGNED,
-        creationDate: new Date("04/02/2024"),
-        editDate: null,
-        comments: [],
-        tags: [],
-        deleted: false,
-        uniqueId: 2
-      }
-    ]
+      return {
+        apiSuccessful: true,
+      };
+
+    }
+    catch(error) {
+      console.error(error); 
+      this.firebaseIsWorking = false;
+      return {
+        apiSuccessful: false,
+        error: error.error,
+      };
+      
+    }
   }
 }
 
 export interface WeTrackResponse {
-  tickets: WeTrackTicket[],
+  tickets?: WeTrackTicketsObject,
+  singleTicket?: WeTrackTicket,
   apiSuccessful: boolean,
   error?: any,
+}
+
+export interface WeTrackTicketsObject {
+  [key: string]: WeTrackTicket
 }

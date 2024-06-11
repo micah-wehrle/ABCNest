@@ -63,7 +63,7 @@ export class WeTrackTicket {
     public status: string = WeTrackTicket.STATIC_DATA.STATUS.PENDING,
     public creationDate: Date = new Date(),
     public editDate: Date = new Date(),
-    public comments: Comment[] = [],
+    public comments: {[key: string]: Comment} = {},
     public tags: string[] = [],
   ) {}
 }
@@ -71,8 +71,8 @@ export class WeTrackTicket {
 export interface Comment {
   name: string,
   comment: string,
-  date: Date,
-  reply: Reply[]
+  date: number,
+  reply: {[key: string]: Reply}
 }
 
 export interface Reply extends Omit<Comment, 'reply'> {} 

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { WeTrackTicket } from '../models/we-track-ticket.model';
-import { WeTrackService } from '../services/we-track/we-track.service';
+import { Comment, WeTrackTicket } from '../models/we-track-ticket.model';
+import { WeTrackService, WeTrackTicketsObject } from '../services/we-track/we-track.service';
 
 @Controller('we-track')
 export class WeTrackController {
@@ -17,7 +17,7 @@ export class WeTrackController {
         output = {
           'flowStatus': 'SUCCESS',
           'flowStatusMessage': response.apiSuccessful ? 'Successfully retrieved weTrack data' : response.error,
-          'tickets': response.tickets,
+          'tickets': this.removeDeletedTickets(response.tickets),
         }
       });
     
@@ -33,7 +33,7 @@ export class WeTrackController {
         output = {
           'flowStatus': 'SUCCESS',
           'flowStatusMessage': response.apiSuccessful ? 'Successfully updated weTrack ticket' : response.error,
-          'tickets': response.tickets,
+          'tickets': this.removeDeletedTickets(response.tickets),
         }
       });
     
@@ -50,7 +50,7 @@ export class WeTrackController {
         output = {
           'flowStatus': 'SUCCESS',
           'flowStatusMessage': response.apiSuccessful ? 'Successfully updated weTrack ticket' : response.error,
-          'tickets': response.tickets,
+          'tickets': this.removeDeletedTickets(response.tickets),
         }
       });
   
@@ -58,7 +58,69 @@ export class WeTrackController {
   }
 
   @Post('delete')
-  async deleteWeTrackTicket() {
+  async deleteWeTrackTicket(@Body() body: { ticketId: number, isDeleted: boolean }) {
+    let output: any;
 
+    await this.weTrack.deleteTicket(body.ticketId, body.isDeleted)
+      .then((response) => {
+        output = {
+          'flowStatus': 'SUCCESS',
+          'flowStatusMessage': response.apiSuccessful ? 'Successfully updated weTrack ticket' : response.error,
+          'tickets': this.removeDeletedTickets(response.tickets),
+        }
+      });
+  
+    return output;
+  }
+
+  @Post('comment')
+  async addWeTrackTicketComment(@Body() body: { ticketId: number, comment: Comment}) {
+    
+    let output: any;
+
+    await this.weTrack.addComment(body.ticketId, body.comment);
+  }
+
+  @Get('get-deleted')
+  async getDeletedTickets() {
+    let output: any;
+
+    await this.weTrack.callTickets()
+      .then((response) => {
+        output = {
+          'flowStatus': 'SUCCESS',
+          'flowStatusMessage': response.apiSuccessful ? 'Successfully retrieved weTrack data' : response.error,
+          'tickets': this.removeNonDeletedTickets(response.tickets),
+        }
+      });
+    
+    return output;
+  }
+
+  private removeDeletedTickets(tickets: WeTrackTicketsObject): WeTrackTicketsObject {
+    const output: WeTrackTicketsObject = {};
+
+    for (let key in tickets) {
+      const ticket = tickets[key];
+      if (!ticket.deleted) {
+        delete ticket["deleted"];
+        output[key] = ticket;
+      }
+    }
+
+    return output;
+  }
+
+  private removeNonDeletedTickets(tickets: WeTrackTicketsObject): WeTrackTicketsObject {
+    const output: WeTrackTicketsObject = {};
+
+    for (let key in tickets) {
+      const ticket = tickets[key];
+      if (ticket.deleted) {
+        output[key] = ticket;
+      }
+    }
+
+    return output;
   }
 }
