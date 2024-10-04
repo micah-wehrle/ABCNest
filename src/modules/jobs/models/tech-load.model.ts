@@ -356,10 +356,15 @@ export class TechLoad {
 
   /**
    * @description - Uses the first three starter pokemon as a seed
-   * @returns {Pokemon[]} - returns a list of the first three starter pokemon
+   * @returns {Pokemon} - returns a random starter pokemon
    */
-  private generatePokemon(): Pokemon[] {
-    return [
+  private generatePokemon(): Pokemon | null {
+
+    if (this.nextRand() < 0.3) { // Return null 33% of the time
+      return null;
+    }
+
+    return this.randOf<Pokemon>([
       {
         id: 1,
         name: 'bulbasaur',
@@ -380,8 +385,7 @@ export class TechLoad {
         sprites: {
           front_default: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
         }
-      }
-    ]
+      }])
   }
 }
 
@@ -398,7 +402,7 @@ export interface JobData {
   history: History[],
   facilities: Facility[],
   services: Services,
-  pokemon: Pokemon[]
+  pokemon: Pokemon
 }
 
 interface Facility {
