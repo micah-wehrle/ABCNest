@@ -1,0 +1,195 @@
+{
+  "1": {
+    "assignee": "",
+    "creationDate": "2024-03-26T00:00:00.000Z",
+    "description": "Create a view, accessed by the sidebar menu, which displays info about all of our api service files. When a servici",
+    "editDate": "2024-04-26T00:53:51.061Z",
+    "importance": "low",
+    "status": "pending",
+    "submitter": "Micah",
+    "title": "Api Monitor Page",
+    "type": "feature",
+    "uniqueId": 1
+  },
+  "2": {
+    "assignee": "Micah",
+    "comments": {
+      "1715820658172": {
+        "comment": "I have the main weTrack list mostly functioning as desired. I am working on a settings page to be able to add sub-sections of tickets, for other projects and also to be able to add repos which can be linked with projects.",
+        "date": 1715820658172,
+        "name": "Micah"
+      }
+    },
+    "creationDate": "2024-04-02T00:00:00.000Z",
+    "description": "Create weTrack on the band and front ends so that when any user loads the weTrack page they can have access to all the current tickets.",
+    "editDate": "2024-06-10T23:31:07.927Z",
+    "importance": "high",
+    "status": "in-progress",
+    "submitter": "Micah",
+    "title": "Finish weTrack",
+    "type": "feature",
+    "uniqueId": 2
+  },
+  "1714013152084": {
+    "assignee": "Chris",
+    "creationDate": "2024-04-20T00:00:00.000Z",
+    "description": "Safety expectations for technicians are always changing, and so it would be beneficial for technicians to be notified when a change is made. This feature would include an alert system to notify the technician when a new safety update has been made.",
+    "editDate": "2024-05-09T02:04:51.023Z",
+    "importance": "medium",
+    "status": "in-progress",
+    "submitter": "Chris",
+    "title": "Safety Updates",
+    "type": "feature",
+    "uniqueId": 1714013152084
+  },
+  "1714092944597": {
+    "assignee": "Brandon",
+    "creationDate": "2024-04-01T00:00:00.000Z",
+    "description": "Helps managers keep track of pre-install drop work.",
+    "editDate": "2024-05-09T02:17:46.683Z",
+    "importance": "high",
+    "status": "cancelled",
+    "submitter": "Brandon",
+    "title": "Expert Path Finder Tracker",
+    "type": "idea",
+    "uniqueId": 1714092944597
+  },
+  "1715218909385": {
+    "assignee": "",
+    "creationDate": "2024-05-09T00:00:00.000Z",
+    "description": "The current vertical flow, specifically for expert path, could use some improvements. May be beneficial to research how the data is passed into the current setup, so that some vertical flows (like RRs) don't need to be modified. Should have better step nesting and better navigation between steps.",
+    "editDate": "2024-05-09T01:59:04.864Z",
+    "importance": "low",
+    "status": "pending",
+    "submitter": "Micah",
+    "title": "Redesign Vertical Flow",
+    "type": "feature",
+    "uniqueId": 1715218909385
+  },
+  "1715219979394": {
+    "assignee": "",
+    "comments": {
+      "1715223642255": {
+        "comment": "Testing, hello earth",
+        "date": 1715223642255,
+        "name": "Micah"
+      },
+      "1715226104289": {
+        "comment": "Hey looks like it's working!",
+        "date": 1715226104289,
+        "name": "Brandon"
+      }
+    },
+    "creationDate": "2024-05-09T01:59:39.394Z",
+    "deleted": true,
+    "description": "123",
+    "editDate": "2024-05-09T01:59:39.394Z",
+    "importance": "low",
+    "status": "pending",
+    "submitter": "Micah",
+    "title": "Junk",
+    "type": "feature",
+    "uniqueId": 1715219979394
+  },
+  "1715220507293": {
+    "assignee": "",
+    "creationDate": "2024-05-09T02:08:27.293Z",
+    "description": "The weather service is run entirely on the front end. In order to move to the back end, we need to decide if the weather alerts are included with the ticket data (may not be a good idea) or if they're just on-demand from the front end. \n\nWe could do a sort of hybrid of both, where the back end when generating a list of tickets will find the weather alerts for the first ticket. We should also look into storing weather alert data (semi permanently? so at least it will persist between server restarts while developing) so that it isn't being called constantly. Then if the user opens a ticket for which they don't have weather data, they can then request it from the back end.",
+    "editDate": "2024-05-09T02:08:27.293Z",
+    "importance": "low",
+    "status": "pending",
+    "submitter": "Micah",
+    "title": "Weather to Back End",
+    "type": "issue",
+    "uniqueId": 1715220507293
+  },
+  "1715479916412": {
+    "assignee": "",
+    "creationDate": "2024-05-12T02:11:56.412Z",
+    "description": "It would be beneficial to have a modal service where a component can request for a modal to be shown, and then trigger some sort of response based on the user interaction",
+    "editDate": "2024-05-12T02:11:56.412Z",
+    "importance": "medium",
+    "status": "pending",
+    "submitter": "Brandon",
+    "title": "Universal Modal Service",
+    "type": "feature",
+    "uniqueId": 1715479916412
+  },
+  "1715565089950": {
+    "assignee": "",
+    "creationDate": "2024-05-13T01:51:29.950Z",
+    "deleted": true,
+    "description": "asdf",
+    "editDate": "2024-05-13T01:51:29.950Z",
+    "importance": "urgent",
+    "status": "pending",
+    "submitter": "Micah",
+    "title": "Dummy",
+    "type": "idea",
+    "uniqueId": 1715565089950
+  },
+  "1723173000270": {
+    "assignee": "Everyone",
+    "comments": {
+      "1728012432460": {
+        "comment": "Some new developments: I am implementing the front end to display when a pokemon is associated with a job. I'm also adding a special place to view the pokemon within the job. Brandon is working on the back end, making it respond with a pokemon and also making it query the poke-api to gather the data about the pokemon. More to follow.",
+        "date": 1728012432460,
+        "name": "Micah"
+      }
+    },
+    "creationDate": "2024-08-09T03:10:00.270Z",
+    "description": "Create a tool to make use of the PokeAPI, via PokeAPI.co\nThis feature should make sure of various aspects of the API, to practice searching through the depth of the API response.\nWill be split up throughout the team as able.",
+    "editDate": "2024-08-09T03:10:00.270Z",
+    "importance": "high",
+    "status": "in-progress",
+    "submitter": "Tyler",
+    "title": "Pokemon Exploration Tool",
+    "type": "feature",
+    "uniqueId": 1723173000270
+  },
+  "1728012512441": {
+    "assignee": "",
+    "comments": {
+      "1728012614257": {
+        "comment": "This will require larger implementation--user data, including but not limited to the number of current jobs and job status, will need to be stored in the back end. For now this will be part of this ticket but may need to be a different ticket done first.",
+        "date": 1728012614257,
+        "deleted": true,
+        "name": "Micah"
+      }
+    },
+    "creationDate": "2024-10-04T03:28:32.441Z",
+    "description": "Since we are adding pokemon that can be found by dispatching on jobs, I'd like to be able to close a job which allows you to catch the pokemon. This seems a good opportunity to add the ability to close jobs.",
+    "editDate": "2024-10-04T03:28:32.441Z",
+    "importance": "medium",
+    "status": "pending",
+    "submitter": "Micah",
+    "title": "Close Jobs",
+    "type": "feature",
+    "uniqueId": 1728012512441
+  },
+  "1728060160661": {
+    "assignee": "",
+    "comments": {
+      "1728060216559": {
+        "comment": "Test",
+        "date": 1728060216559,
+        "name": "Micah"
+      },
+      "1728060343261": {
+        "comment": "Test2",
+        "date": 1728060343261,
+        "name": "Micah"
+      }
+    },
+    "creationDate": "2024-10-04T16:42:40.661Z",
+    "deleted": false,
+    "description": "Testing testing",
+    "editDate": "2024-10-04T16:42:40.661Z",
+    "importance": "low",
+    "status": "pending",
+    "submitter": "Micah",
+    "title": "Test",
+    "type": "idea",
+    "uniqueId": 1728060160661
+  }
+}

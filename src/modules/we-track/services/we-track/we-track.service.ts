@@ -198,6 +198,52 @@ export class WeTrackService {
       
     }
   }
+
+  public async deleteComment(uniqueId: number, commentDate: number, isDeleted: boolean) {
+    try {
+      const res = this.http.put(`${this.backendUrl}/${uniqueId}/comments/${commentDate}/deleted.json`, JSON.stringify(isDeleted), this.standardRequestOptions)
+        .pipe(map(response => response.data));
+      
+        const output = await lastValueFrom(res);
+
+        return {
+          apiSuccessful: true
+        }
+
+    }
+
+    catch (error) {
+      console.error(error);
+
+      return {
+        apiSuccessful: false,
+        error: error.error,
+      }
+    }
+  }
+
+  public async permDeleteTicket(uniqueId: number) {
+    try {
+      const res = this.http.delete(`${this.backendUrl}/${uniqueId}.json`, this.standardRequestOptions)
+        .pipe(map(response => response.data));
+      
+      const output = await lastValueFrom(res);
+
+      return {
+        apiSuccessful: true
+      }
+
+    }
+
+    catch (error) {
+      console.error(error);
+
+      return {
+        apiSuccessful: false,
+        error: error.error,
+      }
+    }
+  }
 }
 
 export interface WeTrackResponse {

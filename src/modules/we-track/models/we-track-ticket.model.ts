@@ -72,7 +72,8 @@ export interface Comment {
   name: string,
   comment: string,
   date: number,
-  reply: {[key: string]: Reply}
+  reply: {[key: string]: Reply},
+  deleted: boolean,
 }
 
 export interface Reply extends Omit<Comment, 'reply'> {} 

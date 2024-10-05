@@ -78,7 +78,30 @@ export class WeTrackController {
     
     let output: any;
 
-    await this.weTrack.addComment(body.ticketId, body.comment);
+    await this.weTrack.addComment(body.ticketId, body.comment)
+      .then((response) => {
+        output = {
+          'flowStatus': 'SUCCESS',
+          'flowStatusMessage': response.apiSuccessful ? 'Successfully added weTrack comment' : response.error,
+          'tickets': this.removeDeletedTickets(response.tickets),
+        }
+      });
+
+  }
+
+  @Post('delete-comment')
+  async deleteWeTrackTicketComment(@Body() body: {ticketId: number, commentDate: number, isDeleted: boolean}) {
+    let output: any;
+
+    await this.weTrack.deleteComment(body.ticketId, body.commentDate, body.isDeleted);
+    return {'test': 'testing'};
+  }
+
+  @Post('perm-delete')
+  async permanentlyDeleteWeTrackTicket(@Body() body: {ticketId: number}) {
+    let output: any;
+    await this.weTrack.permDeleteTicket(body.ticketId);
+    return {};
   }
 
   @Get('get-deleted')
@@ -104,11 +127,27 @@ export class WeTrackController {
       const ticket = tickets[key];
       if (!ticket.deleted) {
         delete ticket["deleted"];
-        output[key] = ticket;
+        output[key] = this.removeDeletedComments(ticket);
       }
     }
 
     return output;
+  }
+
+  private removeDeletedComments(ticketBase: WeTrackTicket): WeTrackTicket {
+    if (!ticketBase.comments || Object.keys(ticketBase.comments).length === 0) {
+      return ticketBase;
+    }
+
+    const outputComments = {};
+    for (let key in ticketBase.comments) {
+      if (!ticketBase.comments[key].deleted) {
+        outputComments[key] = ticketBase.comments[key];
+      }
+    }
+    const ticket = JSON.parse(JSON.stringify(ticketBase));
+    ticket.comments = outputComments;
+    return ticket;
   }
 
   private removeNonDeletedTickets(tickets: WeTrackTicketsObject): WeTrackTicketsObject {
