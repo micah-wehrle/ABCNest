@@ -86,7 +86,7 @@ export class WeTrackController {
           'tickets': this.removeDeletedTickets(response.tickets),
         }
       });
-
+      return output;
   }
 
   @Post('delete-comment')
