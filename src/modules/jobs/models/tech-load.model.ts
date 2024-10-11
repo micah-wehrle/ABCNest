@@ -360,7 +360,7 @@ export class TechLoad {
    */
   private generatePokemon(): Pokemon | null {
 
-    if (this.nextRand() > 0.3) { // Return null 10% of the time
+    if (this.nextRand() > 0.3) { // Return null 30% of the time
       return null;
     }
 
