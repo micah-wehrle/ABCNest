@@ -12,7 +12,7 @@ export class WeTrackService {
 
   private firebaseIsWorking: boolean = true;
   private readonly timeout: number = 3000;
-  private readonly timeoutMessage: string = 'Error: Timeout limit exceeded';
+  private readonly timeoutMessage: string = 'ABC Error: Timeout limit exceeded';
   private readonly standardRequestOptions: Partial<AxiosRequestConfig>;
 
   private readonly backendUrl: string = "https://atlas-boot-camp-default-rtdb.firebaseio.com/we-track";
