@@ -11,8 +11,8 @@ export class JobsController {
       'flowStatusMessage': "Invalid request path. Path must include 'jobs/get/:uuid'"
     }
   }
-  @Get(['get/:uuid', '/get/:uuid/:amount'])
-  async getJobsSpecific(@Param('uuid') uuid: string, @Param('amount') amount: string) {
+  @Get(['get/:uuid/:date', '/get/:uuid/:date/:amount'])
+  async getJobsSpecific(@Param('uuid') uuid: string, @Param('date') date: string, @Param('amount') amount: string) {
     await new Promise(resolve => setTimeout(resolve, 500)); // just adds a delay for feel so request isn't instantaneous.
     
     if (!uuid || !uuid.match(/^[a-z]{2}\d{3}[a-z\d]$/i)) { // regex checks for valid uuid
@@ -23,12 +23,15 @@ export class JobsController {
     }
 
     // Doesn't matter if amount is undefined or a non-number, parseInt will just return NaN which is then handled by TechLoad. The second value is an optional variable so in the case that amount is NaN then it is still handled the same, as a falsy value.
-    const jobData: TechLoad = new TechLoad(uuid, Number.parseInt(amount));
+    const jobData: TechLoad = new TechLoad(uuid, date, Number.parseInt(amount));
     
     return {
       'flowStatus': 'SUCCESS',
       'flowStatusMessage': '',
-      'jobs': jobData.jobs // only passes array of jobs to save on response packet size
+      'jobs': jobData.jobs, // only passes array of jobs to save on response packet size
+      'date': jobData.getDate(),
+      'uuid': jobData.getUUID(),
+      'count': jobData.getJobCount()
     }
   }
 }

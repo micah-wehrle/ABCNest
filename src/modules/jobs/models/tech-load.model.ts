@@ -2,23 +2,47 @@ export class TechLoad {
 
   public  jobs: JobData[];
   private jobCount: number;
-  private uuid: string;
 
   private seed: number;
   private seedIndex: number = 0; // doesn't really matter what it's instantiated to, just needs to be any number >= 0 so the seed methods can generate the next number
 
-  constructor(uuid: string, amount?: number) { // Can be built with a given amount, but if not will seed the number of jobs to build
-    this.uuid = uuid;
+  constructor(private uuid: string, private date: string, amount?: number) { // Can be built with a given amount, but if not will seed the number of jobs to build
     // uses abs as ensure the seed is positive. convertStrToNum sometimes returns a negative value, and the seed increments positively so must start >= 0 or else may create predictable seeded number (i.e. 0 * anything is always 0)
-    this.seed = Math.abs(this.convertStrToNum(uuid));
+    this.seed = Math.abs(this.convertStrToNum(uuid + date));
     
     this.jobs = [];
     // generate a random number of jobs, weighted towards ~3
     const generatedJobCount: number = Math.round( (this.nextRand()*7 + this.nextRand()*7) / 2 );  // This line needs to run regardless of if we were passed an amount, or else the seeded rng will get messed up!
     this.jobCount = amount ? amount : generatedJobCount; // allows for front end to request a specific number of jobs. If amount is not present, use the above generated number
     for (let i = 0; i < this.jobCount; i++) {
+      this.seed = Math.abs(this.convertStrToNum(uuid + date + '/' + i)); // re-seeds for every job, so changes to the number of rand calls in one job won't impact future jobs. Without this, each job is generated from the same series of seeded numbers
+      this.seedIndex = 0;
       this.jobs.push(this.generateJob()); // Where all the "magic" happens, generateJob will create all job data and push it into job array
     }
+  }
+
+  /**
+   * @description Getter for uuid used for job generation
+   * @returns The used UUID
+   */
+  public getUUID(): string {
+    return this.uuid;
+  }
+
+  /**
+   * @description Getter for date used for job generation
+   * @returns The used date
+   */
+  public getDate(): string {
+    return this.date;
+  }
+
+  /**
+   * @description Getter for job count
+   * @returns The number of jobs generated
+   */
+  public getJobCount(): number {
+    return this.jobCount;
   }
 
   /**
