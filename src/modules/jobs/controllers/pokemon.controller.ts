@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus, Query } from '@nestjs/common';
 
 import { PokemonService } from '../services/pokemon.service';
 
@@ -16,20 +16,27 @@ export class PokemonController {
   async getSpecificPokemon(@Query('id') id: string, @Query('name') name: string) {
     await new Promise(resolve => setTimeout(resolve, 500)); // just adds a delay for feel so request isn't instantaneous.
     
-
-    if (!this.pokemonService.isGenOne(id, name)) {
-      return {
-        'flowStatus': 'FAILURE',
-        'flowStatusMessage': `${id ? 'Invalid id - must be between 1 and 151' : 'Invalid name - name must be a gen one pokemon'} `,
-      }
-    }
-
-    const pokemonData = await this.pokemonService.getPokemon(id || name);
+    try {
+      const pokemonData = await this.pokemonService.getPokemon(id || name);
     
-    return {
-      'flowStatus': 'SUCCESS',
-      'flowStatusMessage': 'Pokemon data successfully retrieved from PokeApi v2',
-      'pokemon': pokemonData,
+      return {
+        'httpStatusCode': HttpStatus.OK,
+        'flowStatus': 'SUCCESS',
+        'flowStatusMessage': 'Pokemon data successfully retrieved from PokeApi v2',
+        'pokemon': pokemonData,
+      }
+    } catch (error) {
+      if (error.response.customError) {
+        delete error.response.customError
+        throw error;
+      }
+      throw new HttpException({
+        httpStatusCode: HttpStatus.NOT_FOUND,
+        flowStatus: 'FAILURE',
+        flowStatusMessage: 'Pokemon ID or name parameters are incorrect or not provided',
+      }, HttpStatus.NOT_FOUND, {
+        cause: error
+      })
     }
   }
 }
