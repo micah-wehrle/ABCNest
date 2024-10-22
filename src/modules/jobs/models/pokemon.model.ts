@@ -4,4 +4,13 @@ export interface Pokemon {
   sprites: {
     front_default: string,
   },
+  stats: {
+    att: number,
+    def: number,
+    hp: number,
+  },
+  moves: string[],
+  nextEvolution: string,
 }
+
+export interface PokemonLite extends Omit<Pokemon, 'stats' | 'moves' | 'nextEvolution'> {}
