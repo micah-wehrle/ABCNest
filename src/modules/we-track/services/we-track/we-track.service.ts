@@ -33,6 +33,13 @@ export class WeTrackService {
     // this.initTickets();
   }
 
+  // async init() {
+
+  //   const res = this.http.put(this.backendUrl + '.json', JSON.stringify( { 'we-track': (await this.call()).ticketGroups } ), this.standardRequestOptions);
+
+  //   console.log(await lastValueFrom(res));
+  // }
+
   public getLoading(): Observable<boolean> {
     return this.loadingChanged.asObservable();
   }
@@ -58,9 +65,13 @@ export class WeTrackService {
     // this.tickets = (await this.callTickets()).tickets;
   }
 
-  private async call(uniqueId: number = -1): Promise<WeTrackResponse> {
+  private async call(uniqueId: number = -1, ticketGroup?: string): Promise<WeTrackResponse> {
 
-    const path = uniqueId === -1 ? '' : '/' + uniqueId.toString();
+    if (uniqueId !== -1 && !ticketGroup) {
+      throw new Error('Need to supply ticket group when unique ID is provided')
+    }
+
+    const path = uniqueId === -1 ? '' : `/${ticketGroup}/` + uniqueId.toString();
 
     try {
       const response = this.http.get(this.backendUrl + path + '.json', this.standardRequestOptions)
@@ -69,7 +80,7 @@ export class WeTrackService {
       const output = await lastValueFrom(response);
 
       return {
-        tickets: uniqueId === -1 ? output : null,
+        ticketGroups: uniqueId === -1 ? output : null,
         singleTicket: uniqueId !== -1 ? output : null,
         apiSuccessful: true
       };
@@ -90,15 +101,14 @@ export class WeTrackService {
 
   /**
    * @description Receives a WeTrackTicket and 
-   * @param {Partial<WeTrackTicket> & Pick<WeTrackTicket} ticket - A we track ticket with the 
+   * @param {Partial<WeTrackTicket> & Pick<WeTrackTicket>} ticket - A we track ticket with the 
    * @returns 
    */
-  public async updateTicket(ticket: Partial<WeTrackTicket> & Pick<WeTrackTicket, 'uniqueId'>): Promise<WeTrackResponse> {
-
+  public async updateTicket(ticket: Partial<WeTrackTicket> & Pick<WeTrackTicket, 'uniqueId'>, ticketGroup: string): Promise<WeTrackResponse> {
     let ticketPayload: WeTrackTicket = null;
 
     // Get current ticket from back end
-    await this.call(ticket.uniqueId).then( 
+    await this.call(ticket.uniqueId, ticketGroup).then( 
       (res: WeTrackResponse) => {
         ticketPayload = res.singleTicket;
       }
@@ -111,12 +121,12 @@ export class WeTrackService {
 
     // send the updated ticket back to back end
     try {
-      const res = this.http.put(`${this.backendUrl}/${ticket.uniqueId}.json`, JSON.stringify(ticketPayload), this.standardRequestOptions)
+      const res = this.http.put(`${this.backendUrl}/${ticketGroup}/${ticket.uniqueId}.json`, JSON.stringify(ticketPayload), this.standardRequestOptions)
         .pipe(map(res => res.data));
   
       const output = await lastValueFrom(res);
       return {
-        tickets: output, 
+        ticketGroups: output, 
         apiSuccessful: true
       };
 
@@ -131,11 +141,11 @@ export class WeTrackService {
     }
   }
 
-  public async createTicket(ticket: WeTrackTicket): Promise<WeTrackResponse> {
+  public async createTicket(ticket: WeTrackTicket, ticketGroup: string): Promise<WeTrackResponse> {
     try {
       const ticketPayload = ticket;
 
-      const res = this.http.put(`${this.backendUrl}/${ticket.uniqueId}.json`, JSON.stringify(ticketPayload), this.standardRequestOptions)
+      const res = this.http.put(`${this.backendUrl}/${ticketGroup}/${ticket.uniqueId}.json`, JSON.stringify(ticketPayload), this.standardRequestOptions)
         .pipe(map(response => response.data));
       
       const output = await lastValueFrom(res);
@@ -154,10 +164,10 @@ export class WeTrackService {
     }
   }
 
-  public async deleteTicket(ticketId: number, isDeleted: boolean): Promise<WeTrackResponse> {
+  public async deleteTicket(ticketId: number, ticketGroup: string, isDeleted: boolean): Promise<WeTrackResponse> {
 
     try {
-      const res = this.http.put(`${this.backendUrl}/${ticketId}/deleted.json`, `${isDeleted}`, this.standardRequestOptions)
+      const res = this.http.put(`${this.backendUrl}/${ticketGroup}/${ticketId}/deleted.json`, `${isDeleted}`, this.standardRequestOptions)
         .pipe(map(response => response.data));
     
       const output = await lastValueFrom(res);
@@ -176,9 +186,9 @@ export class WeTrackService {
     }
   }
 
-  public async addComment(uniqueId: number, comment: Comment): Promise<WeTrackResponse> {
+  public async addComment(uniqueId: number, ticketGroup: string, comment: Comment): Promise<WeTrackResponse> {
     try {
-      const res = this.http.put(`${this.backendUrl}/${uniqueId}/comments/${comment.date}.json`, JSON.stringify(comment), this.standardRequestOptions)
+      const res = this.http.put(`${this.backendUrl}/${ticketGroup}/${uniqueId}/comments/${comment.date}.json`, JSON.stringify(comment), this.standardRequestOptions)
         .pipe(map(response => response.data));
     
       const output = await lastValueFrom(res);
@@ -199,9 +209,9 @@ export class WeTrackService {
     }
   }
 
-  public async deleteComment(uniqueId: number, commentDate: number, isDeleted: boolean) {
+  public async deleteComment(uniqueId: number, ticketGroup:string, commentDate: number, isDeleted: boolean) {
     try {
-      const res = this.http.put(`${this.backendUrl}/${uniqueId}/comments/${commentDate}/deleted.json`, JSON.stringify(isDeleted), this.standardRequestOptions)
+      const res = this.http.put(`${this.backendUrl}/${ticketGroup}/${uniqueId}/comments/${commentDate}/deleted.json`, JSON.stringify(isDeleted), this.standardRequestOptions)
         .pipe(map(response => response.data));
       
         const output = await lastValueFrom(res);
@@ -222,9 +232,9 @@ export class WeTrackService {
     }
   }
 
-  public async permDeleteTicket(uniqueId: number) {
+  public async permDeleteTicket(uniqueId: number, ticketGroup: string) {
     try {
-      const res = this.http.delete(`${this.backendUrl}/${uniqueId}.json`, this.standardRequestOptions)
+      const res = this.http.delete(`${this.backendUrl}/${ticketGroup}/${uniqueId}.json`, this.standardRequestOptions)
         .pipe(map(response => response.data));
       
       const output = await lastValueFrom(res);
@@ -247,12 +257,12 @@ export class WeTrackService {
 }
 
 export interface WeTrackResponse {
-  tickets?: WeTrackTicketsObject,
+  ticketGroups?: WeTrackTicketsObject,
   singleTicket?: WeTrackTicket,
   apiSuccessful: boolean,
   error?: any,
 }
 
 export interface WeTrackTicketsObject {
-  [key: string]: WeTrackTicket
+  [key: string]: {[key: string]: WeTrackTicket}
 }
