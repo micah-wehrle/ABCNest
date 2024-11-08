@@ -30,6 +30,8 @@ export class WeTrackService {
       timeoutErrorMessage: this.timeoutMessage,
     }
 
+    // this.http.put(`${this.backendUrl}/testing/placeholder.json`, JSON.stringify(true), this.standardRequestOptions);
+
     // this.initTickets();
   }
 
@@ -105,14 +107,46 @@ export class WeTrackService {
    * @returns 
    */
   public async updateTicket(ticket: Partial<WeTrackTicket> & Pick<WeTrackTicket, 'uniqueId'>, ticketGroup: string): Promise<WeTrackResponse> {
-    let ticketPayload: WeTrackTicket = null;
+    let ticketGroups: WeTrackTicketsObject = null;
 
     // Get current ticket from back end
-    await this.call(ticket.uniqueId, ticketGroup).then( 
+    await this.call().then( 
       (res: WeTrackResponse) => {
-        ticketPayload = res.singleTicket;
+        ticketGroups = res.ticketGroups;
       }
     );
+
+    let ticketPayload: WeTrackTicket;
+    let ticketHasNewGroup = false;
+
+    // console.log('unique id', ticket.uniqueId);
+    // console.log('groups:', Object.keys(ticketGroups));
+    // console.log('selected group:', ticketGroup);
+
+    // check if ticketGroup changed
+    if (!ticketGroups[ticketGroup] || !Object.keys(ticketGroups[ticketGroup]).includes('' + ticket.uniqueId)) {
+      ticketHasNewGroup = true;
+      // console.log('here');
+      for (let group of Object.keys(ticketGroups)) {
+        // console.log('checking ', group);
+        // console.log(Object.keys(ticketGroups[group]));
+        // find what group ticket used to be in
+        if (Object.keys(ticketGroups[group]).includes('' + ticket.uniqueId)) {
+          ticketPayload = ticketGroups[group][ticket.uniqueId];
+          console.log(ticketPayload);
+          // delete ticket from old group
+          await this.permDeleteTicket(ticket.uniqueId, group);
+          break;
+        }
+      }
+    }
+
+    // Will trigger if for in loop does not find ticket while looping through all ticket groups
+    if (ticketHasNewGroup && !ticketPayload) {
+      const errMsg = `Internal server error. Detected ticket group change for ticket ID ${ticket.uniqueId} but could not find ticket in other groups.`;
+      console.error(errMsg);
+      throw new Error(errMsg);
+    }
 
     // make changes to ticket based on parameter passed into this method
     for (let key in ticket) {
