@@ -1,4 +1,4 @@
-import { Pokemon } from "./pokemon.model";
+import { Pokemon, PokemonLite } from "./pokemon.model";
 
 export class TechLoad {
 
@@ -358,13 +358,13 @@ export class TechLoad {
    * @description - Uses the first three starter pokemon as a seed
    * @returns {Pokemon} - returns a random starter pokemon
    */
-  private generatePokemon(): Pokemon | null {
+  private generatePokemon(): PokemonLite | null {
 
     if (this.nextRand() > 0.3) { // Return null 30% of the time
       return null;
     }
 
-    return this.randOf<Pokemon>([
+    return this.randOf<PokemonLite>([
       {
         id: 1,
         name: 'bulbasaur',
@@ -402,7 +402,7 @@ export interface JobData {
   history: History[],
   facilities: Facility[],
   services: Services,
-  pokemon: Pokemon
+  pokemon: PokemonLite
 }
 
 interface Facility {
