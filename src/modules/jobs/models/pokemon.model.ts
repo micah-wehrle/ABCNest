@@ -1,4 +1,4 @@
-export interface Pokemon {
+export interface PokemonLong {
   id: number,
   name: string,
   sprites: {
@@ -13,4 +13,4 @@ export interface Pokemon {
   nextEvolution: string,
 }
 
-export interface PokemonLite extends Omit<Pokemon, 'stats' | 'moves' | 'nextEvolution'> {}
+export interface Pokemon extends Omit<PokemonLong, 'stats' | 'moves' | 'nextEvolution'> {}

@@ -32,7 +32,7 @@ export class PokemonService {
   /**
    * @description - function that sends a GET requests to the pokemon API for a specific pokemon
    * @param {string} param - a parameter that is either the pokemon's Id or it's name 
-   * @returns {Pokemon} - returns a pokemon object
+   * @returns {PokemonLong} - returns a pokemon object
    */
   public async getPokemon(param: string): Promise<Pokemon> {
     if (!this.isGenOne(param, param)) {
@@ -46,6 +46,7 @@ export class PokemonService {
 
     const observable = this.httpService.get(`${this.apiUrl}/${param}`).pipe(
       map(response => {
+        console.log('response');
         const data = response.data;
 
         const pokemon: Pokemon = {
@@ -59,8 +60,15 @@ export class PokemonService {
         return pokemon;
       })
     );
+ 
+    observable.subscribe({
+      next: a=>console.log('next', a), 
+      error: a=>console.log('error', a),
+      complete: ()=>console.log('complete')
+    })
 
     const pokemonData = await lastValueFrom(observable);
+
     return pokemonData;
   }
 }
